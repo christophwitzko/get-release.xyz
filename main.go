@@ -18,6 +18,7 @@ func FindDownload(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 	log.Printf("%s - %s %s", r.RemoteAddr, r.Method, r.URL.EscapedPath())
 	url, err := Client.GetLatestDownloadUrl(ps[0].Value, ps[1].Value, ps[2].Value, ps[3].Value)
 	if err != nil || url == "" {
+		log.Println(err)
 		http.NotFound(w, r)
 		return
 	}
