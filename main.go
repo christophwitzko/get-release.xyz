@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/christophwitzko/github-release-download/release"
 	"github.com/julienschmidt/httprouter"
 	"log"
@@ -25,8 +26,13 @@ func FindDownload(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 	http.Redirect(w, r, url, 302)
 }
 
+func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	fmt.Fprintln(w, "https://get-release.xyz/:owner/:repo/:os/:arch")
+}
+
 func main() {
 	router := httprouter.New()
+	router.GET("/", Index)
 	router.GET("/:owner/:repo/:os/:arch", FindDownload)
 
 	log.Println("starting server on port 5000...")
