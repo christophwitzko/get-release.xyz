@@ -1,0 +1,14 @@
+language: go
+go:
+  - 1.x
+install:
+  - go get github.com/Masterminds/glide
+  - curl -SL https://github.com/semantic-release/go-semantic-release/releases/download/v1.2.1/semantic-release_v1.2.1_linux_amd64 -o semantic-release
+  - chmod +x semantic-release
+  - glide install
+script:
+  - go test -v $(glide novendor)
+after_success:
+  - ./publish.sh
+notifications:
+  email: false
