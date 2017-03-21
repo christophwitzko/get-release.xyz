@@ -1,0 +1,30 @@
+{
+  "variables": {
+    "project": "{{env `GOOGLE_PROJECT`}}",
+    "zone": "{{env `GOOGLE_REGION`}}-a"
+  },
+  "builders": [{
+    "type": "googlecompute",
+    "project_id": "{{user `project`}}",
+    "source_image_family": "ubuntu-1604-lts",
+    "zone": "{{user `zone`}}",
+    "image_name": "docker-nginx-proxy-{{timestamp}}",
+    "ssh_username": "ubuntu",
+    "machine_type": "n1-standard-4"
+  }],
+  "provisioners": [{
+    "type": "shell",
+    "execute_command": "{{ .Vars }} sudo -E bash -ex '{{ .Path }}'",
+    "inline": [
+      "fallocate -l 1G /swapfile",
+      "chmod 600 /swapfile",
+      "mkswap /swapfile",
+      "swapon /swapfile",
+      "echo '/swapfile none swap sw 0 0' | tee -a /etc/fstab",
+      "curl -sSL https://get.docker.com/ | sh",
+      "docker run -d --restart=always -p 80:80 -p 443:443 --name nginx-proxy -v /data/certs:/etc/nginx/certs:ro -v /etc/nginx/vhost.d -v /usr/share/nginx/html -v /var/run/docker.sock:/tmp/docker.sock:ro jwilder/nginx-proxy",
+      "docker run -d --restart=always --name letsencrypt-companion --volumes-from nginx-proxy -v /data/certs:/etc/nginx/certs:rw -v /var/run/docker.sock:/var/run/docker.sock:ro jrcs/letsencrypt-nginx-proxy-companion",
+      "sleep 60"
+    ]
+  }]
+}
