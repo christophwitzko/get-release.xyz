@@ -5,6 +5,7 @@ import (
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
 	"strings"
+	"sync"
 )
 
 type Asset struct {
@@ -17,16 +18,19 @@ type Asset struct {
 
 type GithubClient struct {
 	Client *github.Client
+	Mutex  *sync.Mutex
 }
 
 func NewClient(token string) *GithubClient {
 	return &GithubClient{github.NewClient(oauth2.NewClient(context.TODO(), oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},
-	)))}
+	))), &sync.Mutex{}}
 }
 
 func (c *GithubClient) GetLatestReleaseAssets(owner, repo string) ([]*Asset, error) {
+	c.Mutex.Lock()
 	release, _, err := c.Client.Repositories.GetLatestRelease(context.TODO(), owner, repo)
+	c.Mutex.Unlock()
 	if err != nil {
 		return nil, err
 	}
