@@ -4,8 +4,11 @@ import (
 	"context"
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
+	"regexp"
 	"strings"
 )
+
+var osarchRegexp = regexp.MustCompile("(android|darwin|dragonfly|freebsd|linux|nacl|netbsd|openbsd|plan9|solaris|windows)(_|-)(386|amd64p32|amd64|arm64|arm|mips64le|mips64|mipsle|mips|ppc64le|ppc64|s390x|x86_64)")
 
 type Asset struct {
 	Version  string
@@ -44,13 +47,12 @@ func (c *GithubClient) GetLatestReleaseAssets(ctx context.Context, owner, repo s
 			FileName: ra.GetName(),
 			URL:      ra.GetBrowserDownloadURL(),
 		}
-		osarch := strings.Split(ret[i].FileName, "_")
-		if len(osarch) < 2 {
+		osarch := osarchRegexp.FindAllStringSubmatch(ret[i].FileName, -1)
+		if len(osarch) < 1 || len(osarch[0]) < 4 {
 			continue
 		}
-		ret[i].OS = strings.ToLower(osarch[len(osarch)-2])
-		arch := strings.SplitN(strings.ToLower(osarch[len(osarch)-1]), ".", 2)
-		ret[i].Arch = arch[0]
+		ret[i].OS = strings.ToLower(osarch[0][1])
+		ret[i].Arch = strings.ToLower(osarch[0][3])
 	}
 	return ret, nil
 }
