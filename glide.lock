@@ -1,5 +1,5 @@
-hash: cb27a8e8a2415c7542a82fe43440515b92c1ebf84a478e47c55396f43d575e53
-updated: 2017-03-20T22:35:39.99816932+01:00
+hash: fd3dfa00ea6d46ea463d08dee70136a1a99719c4ffd799d452e729a3e16795c0
+updated: 2017-03-23T19:52:07.928874866+01:00
 imports:
 - name: github.com/golang/protobuf
   version: c9c7427a2a70d2eb3bafa0ab2dc163e45f143317
@@ -15,6 +15,8 @@ imports:
   - query
 - name: github.com/julienschmidt/httprouter
   version: 8a45e95fc75cb77048068a62daed98cc22fdac7c
+- name: github.com/Masterminds/semver
+  version: 312afcd0e81e5cf81fdc3cfd0e8504ae031521c8
 - name: golang.org/x/net
   version: a6577fac2d73be281a500b310739095313165611
   subpackages:

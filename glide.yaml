@@ -5,3 +5,4 @@ import:
   - github
 - package: github.com/julienschmidt/httprouter
 - package: golang.org/x/oauth2
+- package: github.com/Masterminds/semver
