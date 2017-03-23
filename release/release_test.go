@@ -129,7 +129,7 @@ func TestGetMatchingDownloadUrl(t *testing.T) {
 		t.Fail()
 	}
 	url, err = client.GetMatchingDownloadUrl(context.TODO(), "owner", "repo", "darwin", "amd64", "invalid")
-	if err != nil || url != "" {
+	if err == nil || url != "" {
 		t.Fail()
 	}
 	url, err = client.GetMatchingDownloadUrl(context.TODO(), "owner", "repo", "darwin", "amd64", ">3")
