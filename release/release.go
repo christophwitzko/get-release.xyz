@@ -5,7 +5,6 @@ import (
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
 	"strings"
-	"sync"
 )
 
 type Asset struct {
@@ -18,19 +17,23 @@ type Asset struct {
 
 type GithubClient struct {
 	Client *github.Client
-	Mutex  *sync.Mutex
+	lock   chan struct{}
 }
 
 func NewClient(token string) *GithubClient {
 	return &GithubClient{github.NewClient(oauth2.NewClient(context.TODO(), oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},
-	))), &sync.Mutex{}}
+	))), make(chan struct{}, 1)}
 }
 
-func (c *GithubClient) GetLatestReleaseAssets(owner, repo string) ([]*Asset, error) {
-	c.Mutex.Lock()
-	release, _, err := c.Client.Repositories.GetLatestRelease(context.TODO(), owner, repo)
-	c.Mutex.Unlock()
+func (c *GithubClient) GetLatestReleaseAssets(ctx context.Context, owner, repo string) ([]*Asset, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	case c.lock <- struct{}{}:
+	}
+	release, _, err := c.Client.Repositories.GetLatestRelease(ctx, owner, repo)
+	<-c.lock
 	if err != nil {
 		return nil, err
 	}
@@ -52,8 +55,8 @@ func (c *GithubClient) GetLatestReleaseAssets(owner, repo string) ([]*Asset, err
 	return ret, nil
 }
 
-func (c *GithubClient) GetLatestDownloadUrl(owner, repo, os, arch string) (string, error) {
-	assets, err := c.GetLatestReleaseAssets(owner, repo)
+func (c *GithubClient) GetLatestDownloadUrl(ctx context.Context, owner, repo, os, arch string) (string, error) {
+	assets, err := c.GetLatestReleaseAssets(ctx, owner, repo)
 	if err != nil {
 		return "", err
 	}

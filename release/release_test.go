@@ -1,6 +1,7 @@
 package release
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/google/go-github/github"
 	"net/http"
@@ -43,7 +44,7 @@ func getNewTestClient(t *testing.T) (*GithubClient, *httptest.Server) {
 func TestClient(t *testing.T) {
 	client, ts := getNewTestClient(t)
 	defer ts.Close()
-	assets, err := client.GetLatestReleaseAssets("owner", "invalid")
+	assets, err := client.GetLatestReleaseAssets(context.TODO(), "owner", "invalid")
 	if assets != nil || err == nil {
 		t.Fatal("invalid client")
 	}
@@ -58,7 +59,7 @@ func checkAsset(t *testing.T, a *Asset, os, arch string) {
 func TestGetLatestReleaseAssets(t *testing.T) {
 	client, ts := getNewTestClient(t)
 	defer ts.Close()
-	assets, err := client.GetLatestReleaseAssets("owner", "repo")
+	assets, err := client.GetLatestReleaseAssets(context.TODO(), "owner", "repo")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -71,12 +72,18 @@ func TestGetLatestReleaseAssets(t *testing.T) {
 func TestGetLatestDownloadUrl(t *testing.T) {
 	client, ts := getNewTestClient(t)
 	defer ts.Close()
-	url, err := client.GetLatestDownloadUrl("owner", "repo", "darwin", "amd64")
+	url, err := client.GetLatestDownloadUrl(context.TODO(), "owner", "repo", "darwin", "amd64")
 	if err != nil || url != "url/a" {
 		t.Fail()
 	}
-	url, err = client.GetLatestDownloadUrl("owner", "repo", "darwin", "arm")
+	url, err = client.GetLatestDownloadUrl(context.TODO(), "owner", "repo", "darwin", "arm")
 	if err != nil || url != "" {
+		t.Fail()
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 0)
+	defer cancel()
+	url, err = client.GetLatestDownloadUrl(ctx, "owner", "repo", "darwin", "amd64")
+	if err == nil || err.Error() != "context deadline exceeded" {
 		t.Fail()
 	}
 }

@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/christophwitzko/github-release-download/release"
 	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 var Client *release.GithubClient
@@ -17,7 +19,9 @@ func init() {
 
 func FindDownload(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	log.Printf("%s - %s %s", r.RemoteAddr, r.Method, r.URL.EscapedPath())
-	url, err := Client.GetLatestDownloadUrl(ps[0].Value, ps[1].Value, ps[2].Value, ps[3].Value)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	url, err := Client.GetLatestDownloadUrl(ctx, ps[0].Value, ps[1].Value, ps[2].Value, ps[3].Value)
 	if err != nil || url == "" {
 		log.Println(err)
 		http.NotFound(w, r)
