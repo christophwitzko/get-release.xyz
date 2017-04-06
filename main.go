@@ -38,14 +38,14 @@ func doRedirect(w http.ResponseWriter, r *http.Request, url string, err error) {
 }
 
 func GetLatestDownload(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 	defer cancel()
 	url, err := Client.GetLatestDownloadUrl(ctx, ps[0].Value, ps[1].Value, ps[2].Value, ps[3].Value)
 	doRedirect(w, r, url, err)
 }
 
 func GetMatchingDownload(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 	defer cancel()
 	url, err := Client.GetMatchingDownloadUrl(ctx, ps[0].Value, ps[1].Value, ps[2].Value, ps[3].Value, ps[4].Value)
 	doRedirect(w, r, url, err)
