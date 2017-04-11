@@ -1,6 +1,8 @@
 # GitHub Release Download Server
 > finds the latest release asset
 
+[![Build Status](https://travis-ci.org/christophwitzko/github-release-download.svg?branch=master)](https://travis-ci.org/christophwitzko/github-release-download)
+
 ## Example
 
 ```bash
