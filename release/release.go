@@ -163,3 +163,47 @@ func (c *GithubClient) GetMatchingDownloadUrl(ctx context.Context, owner, repo, 
 	}
 	return found.Assets.FindURLByOsArch(os, arch), nil
 }
+
+func (c *GithubClient) GetAllVersions(ctx context.Context, prefix, owner, repo string) ([]string, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	case c.lock <- struct{}{}:
+	}
+	allRefs := make([]string, 0)
+	opts := &github.ReferenceListOptions{"tags/" + prefix, github.ListOptions{PerPage: 100}}
+	for {
+		refs, resp, err := c.Client.Git.ListRefs(ctx, owner, repo, opts)
+		if err != nil {
+			return nil, err
+		}
+		for _, r := range refs {
+			allRefs = append(allRefs, strings.TrimPrefix(r.GetRef(), "refs/tags/"))
+		}
+		if resp.NextPage == 0 {
+			break
+		}
+		opts.Page = resp.NextPage
+	}
+	<-c.lock
+	return allRefs, nil
+}
+
+func (c *GithubClient) GetGoVersions(ctx context.Context) ([]string, error) {
+	refs, err := c.GetAllVersions(ctx, "go", "golang", "go")
+	if err != nil {
+		return nil, err
+	}
+	goVers := make([]string, 0)
+	for _, ver := range refs {
+		ver = strings.TrimPrefix(ver, "go")
+		ver = strings.Replace(ver, "beta", "-beta", 1)
+		ver = strings.Replace(ver, "rc", "-rc", 1)
+		v, err := semver.NewVersion(ver)
+		if err != nil {
+			continue
+		}
+		goVers = append(goVers, v.String())
+	}
+	return goVers, nil
+}

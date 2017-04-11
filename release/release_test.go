@@ -33,6 +33,17 @@ var GITHUB_RELEASES = []*github.RepositoryRelease{
 	createRelease("v2.1.0", true),
 }
 
+func createRef(ref string) *github.Reference {
+	return &github.Reference{Ref: &ref}
+}
+
+var GITHUB_TAGS = []*github.Reference{
+	createRef("refs/tags/go1.0"),
+	createRef("refs/tags/go1.8.1"),
+	createRef("refs/tags/go1.9rc1"),
+	createRef("refs/tags/goinvalid"),
+}
+
 func githubHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Authorization") != "Bearer token" {
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
@@ -44,6 +55,10 @@ func githubHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	if r.Method == "GET" && r.URL.Path == "/repos/owner/repo/releases" {
 		json.NewEncoder(w).Encode(GITHUB_RELEASES)
+		return
+	}
+	if r.Method == "GET" && r.URL.Path == "/repos/golang/go/git/refs/tags/go" {
+		json.NewEncoder(w).Encode(GITHUB_TAGS)
 		return
 	}
 	http.Error(w, "invalid route", http.StatusNotImplemented)
@@ -134,6 +149,20 @@ func TestGetMatchingDownloadUrl(t *testing.T) {
 	}
 	url, err = client.GetMatchingDownloadUrl(context.TODO(), "owner", "repo", "darwin", "amd64", ">3")
 	if err != nil || url != "" {
+		t.Fail()
+	}
+}
+
+func TestGetGoVersions(t *testing.T) {
+	client, ts := getNewTestClient(t)
+	defer ts.Close()
+	versions, err := client.GetGoVersions(context.TODO())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if versions[0] != "1.0.0" ||
+		versions[1] != "1.8.1" ||
+		versions[2] != "1.9.0-rc1" {
 		t.Fail()
 	}
 }
