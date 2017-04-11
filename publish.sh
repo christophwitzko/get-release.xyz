@@ -6,7 +6,7 @@ set -e
 GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a --installsuffix cgo -ldflags="-s -w"
 
 # run semantic-release
-./semantic-release -vf
+semantic-release -vf
 export VERSION=$(cat .version)
 
 # docker build
