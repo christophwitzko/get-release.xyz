@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/christophwitzko/github-release-download/release"
 	"github.com/julienschmidt/httprouter"
@@ -57,6 +58,19 @@ func getMatchingDownload(w http.ResponseWriter, r *http.Request, ps httprouter.P
 }
 
 func getVersions(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	defer cancel()
+	if ps[0].Value == "_" && ps[1].Value == "go" {
+		versions, err := client.GetGoVersions(ctx)
+		if err != nil {
+			log.Println(err)
+			http.Error(w, "server error", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		json.NewEncoder(w).Encode(versions)
+		return
+	}
 	http.NotFound(w, r)
 }
 
