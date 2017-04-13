@@ -74,6 +74,21 @@ func getVersions(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	http.NotFound(w, r)
 }
 
+func usage(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	if ps[0].Value != "_usage" {
+		http.NotFound(w, r)
+		return
+	}
+	rl, _, err := client.Client.RateLimits(r.Context())
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "server error", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	json.NewEncoder(w).Encode(rl.Core)
+}
+
 func index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	fmt.Fprintln(w, "https://get-release.xyz/:owner/:repo/:os/:arch{/:constraint}")
 }
@@ -81,6 +96,7 @@ func index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 func main() {
 	router := httprouter.New()
 	router.GET("/", index)
+	router.GET("/:owner", usage)
 	router.GET("/:owner/:repo", getVersions)
 	router.GET("/:owner/:repo/:os/:arch", getLatestDownload)
 	router.GET("/:owner/:repo/:os/:arch/:constraint", getMatchingDownload)
