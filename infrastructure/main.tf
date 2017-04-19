@@ -1,3 +1,10 @@
+terraform {
+  backend "gcs" {
+    bucket  = "get-release-tfstate"
+    path    = "terraform.tfstate"
+  }
+}
+
 variable "image" {
   type = "string"
 }
