@@ -1,6 +1,6 @@
-FROM alpine:3.5
+FROM scratch
 
-RUN apk add --no-cache ca-certificates
+ADD ca-certificates.crt /etc/ssl/certs/
 
 COPY github-release-download /
 
