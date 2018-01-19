@@ -46,6 +46,12 @@ func doRedirect(w http.ResponseWriter, r *http.Request, url string, err error) {
 func getLatestDownload(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 	defer cancel()
+	if len(ps) == 3 {
+		proj := "go-" + ps[0].Value
+		url, err := client.GetLatestDownloadUrl(ctx, proj, proj, ps[1].Value, ps[2].Value)
+		doRedirect(w, r, url, err)
+		return
+	}
 	url, err := client.GetLatestDownloadUrl(ctx, ps[0].Value, ps[1].Value, ps[2].Value, ps[3].Value)
 	doRedirect(w, r, url, err)
 }
@@ -98,6 +104,7 @@ func main() {
 	router.GET("/", index)
 	router.GET("/:owner", usage)
 	router.GET("/:owner/:repo", getVersions)
+	router.GET("/:owner/:repo/:os", getLatestDownload)
 	router.GET("/:owner/:repo/:os/:arch", getLatestDownload)
 	router.GET("/:owner/:repo/:os/:arch/:constraint", getMatchingDownload)
 	server := http.Server{
