@@ -14,17 +14,19 @@ import (
 	"testing"
 )
 
-func TestUsersService_ListGPGKeys(t *testing.T) {
-	setup()
+func TestUsersService_ListGPGKeys_authenticatedUser(t *testing.T) {
+	client, mux, _, teardown := setup()
 	defer teardown()
 
 	mux.HandleFunc("/user/gpg_keys", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, "GET")
 		testHeader(t, r, "Accept", mediaTypeGitSigningPreview)
+		testFormValues(t, r, values{"page": "2"})
 		fmt.Fprint(w, `[{"id":1,"primary_key_id":2}]`)
 	})
 
-	keys, _, err := client.Users.ListGPGKeys(context.Background())
+	opt := &ListOptions{Page: 2}
+	keys, _, err := client.Users.ListGPGKeys(context.Background(), "", opt)
 	if err != nil {
 		t.Errorf("Users.ListGPGKeys returned error: %v", err)
 	}
@@ -35,8 +37,37 @@ func TestUsersService_ListGPGKeys(t *testing.T) {
 	}
 }
 
+func TestUsersService_ListGPGKeys_specifiedUser(t *testing.T) {
+	client, mux, _, teardown := setup()
+	defer teardown()
+
+	mux.HandleFunc("/users/u/gpg_keys", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "GET")
+		testHeader(t, r, "Accept", mediaTypeGitSigningPreview)
+		fmt.Fprint(w, `[{"id":1,"primary_key_id":2}]`)
+	})
+
+	keys, _, err := client.Users.ListGPGKeys(context.Background(), "u", nil)
+	if err != nil {
+		t.Errorf("Users.ListGPGKeys returned error: %v", err)
+	}
+
+	want := []*GPGKey{{ID: Int(1), PrimaryKeyID: Int(2)}}
+	if !reflect.DeepEqual(keys, want) {
+		t.Errorf("Users.ListGPGKeys = %+v, want %+v", keys, want)
+	}
+}
+
+func TestUsersService_ListGPGKeys_invalidUser(t *testing.T) {
+	client, _, _, teardown := setup()
+	defer teardown()
+
+	_, _, err := client.Users.ListGPGKeys(context.Background(), "%", nil)
+	testURLParseError(t, err)
+}
+
 func TestUsersService_GetGPGKey(t *testing.T) {
-	setup()
+	client, mux, _, teardown := setup()
 	defer teardown()
 
 	mux.HandleFunc("/user/gpg_keys/1", func(w http.ResponseWriter, r *http.Request) {
@@ -57,7 +88,7 @@ func TestUsersService_GetGPGKey(t *testing.T) {
 }
 
 func TestUsersService_CreateGPGKey(t *testing.T) {
-	setup()
+	client, mux, _, teardown := setup()
 	defer teardown()
 
 	input := `
@@ -96,7 +127,7 @@ mQINBFcEd9kBEACo54TDbGhKlXKWMvJgecEUKPPcv7XdnpKdGb3LRw5MvFwT0V0f
 }
 
 func TestUsersService_DeleteGPGKey(t *testing.T) {
-	setup()
+	client, mux, _, teardown := setup()
 	defer teardown()
 
 	mux.HandleFunc("/user/gpg_keys/1", func(w http.ResponseWriter, r *http.Request) {

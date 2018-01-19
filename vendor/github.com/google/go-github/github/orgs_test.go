@@ -15,12 +15,13 @@ import (
 )
 
 func TestOrganizationsService_ListAll(t *testing.T) {
-	setup()
+	client, mux, _, teardown := setup()
 	defer teardown()
 
 	since := 1342004
 	mux.HandleFunc("/organizations", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, "GET")
+		testHeader(t, r, "Accept", mediaTypeGraphQLNodeIDPreview)
 		testFormValues(t, r, values{"since": "1342004"})
 		fmt.Fprint(w, `[{"id":4314092}]`)
 	})
@@ -38,11 +39,12 @@ func TestOrganizationsService_ListAll(t *testing.T) {
 }
 
 func TestOrganizationsService_List_authenticatedUser(t *testing.T) {
-	setup()
+	client, mux, _, teardown := setup()
 	defer teardown()
 
 	mux.HandleFunc("/user/orgs", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, "GET")
+		testHeader(t, r, "Accept", mediaTypeGraphQLNodeIDPreview)
 		fmt.Fprint(w, `[{"id":1},{"id":2}]`)
 	})
 
@@ -58,11 +60,12 @@ func TestOrganizationsService_List_authenticatedUser(t *testing.T) {
 }
 
 func TestOrganizationsService_List_specifiedUser(t *testing.T) {
-	setup()
+	client, mux, _, teardown := setup()
 	defer teardown()
 
 	mux.HandleFunc("/users/u/orgs", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, "GET")
+		testHeader(t, r, "Accept", mediaTypeGraphQLNodeIDPreview)
 		testFormValues(t, r, values{"page": "2"})
 		fmt.Fprint(w, `[{"id":1},{"id":2}]`)
 	})
@@ -80,16 +83,20 @@ func TestOrganizationsService_List_specifiedUser(t *testing.T) {
 }
 
 func TestOrganizationsService_List_invalidUser(t *testing.T) {
+	client, _, _, teardown := setup()
+	defer teardown()
+
 	_, _, err := client.Organizations.List(context.Background(), "%", nil)
 	testURLParseError(t, err)
 }
 
 func TestOrganizationsService_Get(t *testing.T) {
-	setup()
+	client, mux, _, teardown := setup()
 	defer teardown()
 
 	mux.HandleFunc("/orgs/o", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, "GET")
+		testHeader(t, r, "Accept", mediaTypeGraphQLNodeIDPreview)
 		fmt.Fprint(w, `{"id":1, "login":"l", "url":"u", "avatar_url": "a", "location":"l"}`)
 	})
 
@@ -105,12 +112,36 @@ func TestOrganizationsService_Get(t *testing.T) {
 }
 
 func TestOrganizationsService_Get_invalidOrg(t *testing.T) {
+	client, _, _, teardown := setup()
+	defer teardown()
+
 	_, _, err := client.Organizations.Get(context.Background(), "%")
 	testURLParseError(t, err)
 }
 
+func TestOrganizationsService_GetByID(t *testing.T) {
+	client, mux, _, teardown := setup()
+	defer teardown()
+
+	mux.HandleFunc("/organizations/1", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "GET")
+		testHeader(t, r, "Accept", mediaTypeGraphQLNodeIDPreview)
+		fmt.Fprint(w, `{"id":1, "login":"l", "url":"u", "avatar_url": "a", "location":"l"}`)
+	})
+
+	org, _, err := client.Organizations.GetByID(context.Background(), 1)
+	if err != nil {
+		t.Fatalf("Organizations.GetByID returned error: %v", err)
+	}
+
+	want := &Organization{ID: Int(1), Login: String("l"), URL: String("u"), AvatarURL: String("a"), Location: String("l")}
+	if !reflect.DeepEqual(org, want) {
+		t.Errorf("Organizations.GetByID returned %+v, want %+v", org, want)
+	}
+}
+
 func TestOrganizationsService_Edit(t *testing.T) {
-	setup()
+	client, mux, _, teardown := setup()
 	defer teardown()
 
 	input := &Organization{Login: String("l")}
@@ -120,6 +151,7 @@ func TestOrganizationsService_Edit(t *testing.T) {
 		json.NewDecoder(r.Body).Decode(v)
 
 		testMethod(t, r, "PATCH")
+		testHeader(t, r, "Accept", mediaTypeGraphQLNodeIDPreview)
 		if !reflect.DeepEqual(v, input) {
 			t.Errorf("Request body = %+v, want %+v", v, input)
 		}
@@ -139,6 +171,9 @@ func TestOrganizationsService_Edit(t *testing.T) {
 }
 
 func TestOrganizationsService_Edit_invalidOrg(t *testing.T) {
+	client, _, _, teardown := setup()
+	defer teardown()
+
 	_, _, err := client.Organizations.Edit(context.Background(), "%", nil)
 	testURLParseError(t, err)
 }

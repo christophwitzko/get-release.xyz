@@ -57,7 +57,7 @@ func TestUser_marshall(t *testing.T) {
 }
 
 func TestUsersService_Get_authenticatedUser(t *testing.T) {
-	setup()
+	client, mux, _, teardown := setup()
 	defer teardown()
 
 	mux.HandleFunc("/user", func(w http.ResponseWriter, r *http.Request) {
@@ -77,7 +77,7 @@ func TestUsersService_Get_authenticatedUser(t *testing.T) {
 }
 
 func TestUsersService_Get_specifiedUser(t *testing.T) {
-	setup()
+	client, mux, _, teardown := setup()
 	defer teardown()
 
 	mux.HandleFunc("/users/u", func(w http.ResponseWriter, r *http.Request) {
@@ -97,12 +97,15 @@ func TestUsersService_Get_specifiedUser(t *testing.T) {
 }
 
 func TestUsersService_Get_invalidUser(t *testing.T) {
+	client, _, _, teardown := setup()
+	defer teardown()
+
 	_, _, err := client.Users.Get(context.Background(), "%")
 	testURLParseError(t, err)
 }
 
 func TestUsersService_GetByID(t *testing.T) {
-	setup()
+	client, mux, _, teardown := setup()
 	defer teardown()
 
 	mux.HandleFunc("/user/1", func(w http.ResponseWriter, r *http.Request) {
@@ -112,7 +115,7 @@ func TestUsersService_GetByID(t *testing.T) {
 
 	user, _, err := client.Users.GetByID(context.Background(), 1)
 	if err != nil {
-		t.Errorf("Users.GetByID returned error: %v", err)
+		t.Fatalf("Users.GetByID returned error: %v", err)
 	}
 
 	want := &User{ID: Int(1)}
@@ -122,7 +125,7 @@ func TestUsersService_GetByID(t *testing.T) {
 }
 
 func TestUsersService_Edit(t *testing.T) {
-	setup()
+	client, mux, _, teardown := setup()
 	defer teardown()
 
 	input := &User{Name: String("n")}
@@ -151,7 +154,7 @@ func TestUsersService_Edit(t *testing.T) {
 }
 
 func TestUsersService_ListAll(t *testing.T) {
-	setup()
+	client, mux, _, teardown := setup()
 	defer teardown()
 
 	mux.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
@@ -173,7 +176,7 @@ func TestUsersService_ListAll(t *testing.T) {
 }
 
 func TestUsersService_ListInvitations(t *testing.T) {
-	setup()
+	client, mux, _, teardown := setup()
 	defer teardown()
 
 	mux.HandleFunc("/user/repository_invitations", func(w http.ResponseWriter, r *http.Request) {
@@ -182,7 +185,7 @@ func TestUsersService_ListInvitations(t *testing.T) {
 		fmt.Fprintf(w, `[{"id":1}, {"id":2}]`)
 	})
 
-	got, _, err := client.Users.ListInvitations(context.Background())
+	got, _, err := client.Users.ListInvitations(context.Background(), nil)
 	if err != nil {
 		t.Errorf("Users.ListInvitations returned error: %v", err)
 	}
@@ -193,8 +196,26 @@ func TestUsersService_ListInvitations(t *testing.T) {
 	}
 }
 
+func TestUsersService_ListInvitations_withOptions(t *testing.T) {
+	client, mux, _, teardown := setup()
+	defer teardown()
+
+	mux.HandleFunc("/user/repository_invitations", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "GET")
+		testFormValues(t, r, values{
+			"page": "2",
+		})
+		testHeader(t, r, "Accept", mediaTypeRepositoryInvitationsPreview)
+		fmt.Fprintf(w, `[{"id":1}, {"id":2}]`)
+	})
+
+	_, _, err := client.Users.ListInvitations(context.Background(), &ListOptions{Page: 2})
+	if err != nil {
+		t.Errorf("Users.ListInvitations returned error: %v", err)
+	}
+}
 func TestUsersService_AcceptInvitation(t *testing.T) {
-	setup()
+	client, mux, _, teardown := setup()
 	defer teardown()
 
 	mux.HandleFunc("/user/repository_invitations/1", func(w http.ResponseWriter, r *http.Request) {
@@ -209,7 +230,7 @@ func TestUsersService_AcceptInvitation(t *testing.T) {
 }
 
 func TestUsersService_DeclineInvitation(t *testing.T) {
-	setup()
+	client, mux, _, teardown := setup()
 	defer teardown()
 
 	mux.HandleFunc("/user/repository_invitations/1", func(w http.ResponseWriter, r *http.Request) {
