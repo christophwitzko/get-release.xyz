@@ -1,7 +1,7 @@
 terraform {
   backend "gcs" {
-    bucket  = "get-release-tfstate"
-    path    = "terraform.tfstate"
+    bucket = "get-release-tfstate"
+    path   = "terraform.tfstate"
   }
 }
 
@@ -35,12 +35,15 @@ resource "google_compute_instance" "default" {
   zone         = "us-west1-a"
   tags         = ["http"]
 
-  disk {
-    image = "${var.image}"
+  boot_disk {
+    initialize_params {
+      image = "${var.image}"
+    }
   }
 
   network_interface {
     network = "default"
+
     access_config {
       # Ephemeral
     }
@@ -56,7 +59,7 @@ resource "google_compute_instance" "default" {
 
     inline = [
       "sudo docker run -d --name hub-webhook -e VIRTUAL_HOST=hub-webhook.${var.domain} -e LETSENCRYPT_HOST=hub-webhook.${var.domain} -e LETSENCRYPT_EMAIL=me@chw.io -e DEFAULT_VHOST=${var.domain} -e DEFAULT_PARAMS='-e GITHUB_TOKEN=${var.github_token} -e LETSENCRYPT_EMAIL=me@chw.io' -e DEFAULT_TOKEN=${var.deploy_token} -v /var/run/docker.sock:/var/run/docker.sock:ro christophwitzko/docker-hub-webhook",
-      "sudo docker run -d --name grd-server -e GITHUB_TOKEN=${var.github_token} -e LETSENCRYPT_EMAIL=me@chw.io --restart=always -e VIRTUAL_HOST=${var.domain} -e LETSENCRYPT_HOST=${var.domain} christophwitzko/grd-server"
+      "sudo docker run -d --name grd-server -e GITHUB_TOKEN=${var.github_token} -e LETSENCRYPT_EMAIL=me@chw.io --restart=always -e VIRTUAL_HOST=${var.domain} -e LETSENCRYPT_HOST=${var.domain} christophwitzko/grd-server",
     ]
   }
 }
@@ -84,7 +87,7 @@ resource "google_dns_record_set" "hub" {
   managed_zone = "${google_dns_managed_zone.default.name}"
   type         = "A"
   ttl          = 300
-  rrdatas = ["${google_compute_instance.default.network_interface.0.access_config.0.assigned_nat_ip}"]
+  rrdatas      = ["${google_compute_instance.default.network_interface.0.access_config.0.assigned_nat_ip}"]
 }
 
 resource "google_dns_record_set" "default" {
@@ -92,7 +95,7 @@ resource "google_dns_record_set" "default" {
   managed_zone = "${google_dns_managed_zone.default.name}"
   type         = "A"
   ttl          = 300
-  rrdatas = ["${google_compute_instance.default.network_interface.0.access_config.0.assigned_nat_ip}"]
+  rrdatas      = ["${google_compute_instance.default.network_interface.0.access_config.0.assigned_nat_ip}"]
 }
 
 output "ip" {
