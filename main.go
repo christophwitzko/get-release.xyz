@@ -47,8 +47,7 @@ func getLatestDownload(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 	defer cancel()
 	if len(ps) == 3 {
-		proj := "go-" + ps[0].Value
-		url, err := client.GetLatestDownloadUrl(ctx, proj, proj, ps[1].Value, ps[2].Value)
+		url, err := client.GetLatestDownloadUrl(ctx, "go-" + ps[0].Value, ps[0].Value, ps[1].Value, ps[2].Value)
 		doRedirect(w, r, url, err)
 		return
 	}
