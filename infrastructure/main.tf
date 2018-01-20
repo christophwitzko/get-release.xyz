@@ -58,7 +58,7 @@ resource "google_compute_instance" "default" {
     }
 
     inline = [
-      "sudo docker run -d --name hub-webhook -e VIRTUAL_HOST=hub-webhook.${var.domain} -e LETSENCRYPT_HOST=hub-webhook.${var.domain} -e LETSENCRYPT_EMAIL=me@chw.io -e DEFAULT_VHOST=${var.domain} -e DEFAULT_PARAMS='-e GITHUB_TOKEN=${var.github_token} -e LETSENCRYPT_EMAIL=me@chw.io' -e DEFAULT_TOKEN=${var.deploy_token} -v /var/run/docker.sock:/var/run/docker.sock:ro christophwitzko/docker-hub-webhook",
+      "sudo docker run -d --name hub-webhook -e VIRTUAL_HOST=hub-webhook.${var.domain} -e LETSENCRYPT_HOST=hub-webhook.${var.domain} -e LETSENCRYPT_EMAIL=me@chw.io --restart=always -e DEFAULT_VHOST=${var.domain} -e DEFAULT_PARAMS='-e GITHUB_TOKEN=${var.github_token} -e LETSENCRYPT_EMAIL=me@chw.io' -e DEFAULT_TOKEN=${var.deploy_token} -v /var/run/docker.sock:/var/run/docker.sock:ro christophwitzko/docker-hub-webhook",
       "sudo docker run -d --name grd-server -e GITHUB_TOKEN=${var.github_token} -e LETSENCRYPT_EMAIL=me@chw.io --restart=always -e VIRTUAL_HOST=${var.domain} -e LETSENCRYPT_HOST=${var.domain} christophwitzko/grd-server",
     ]
   }
