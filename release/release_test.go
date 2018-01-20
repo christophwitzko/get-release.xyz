@@ -67,7 +67,7 @@ func githubHandler(w http.ResponseWriter, r *http.Request) {
 func getNewTestClient(t *testing.T) (*GithubClient, *httptest.Server) {
 	client := NewClient("token")
 	ts := httptest.NewServer(http.HandlerFunc(githubHandler))
-	client.Client.BaseURL, _ = url.Parse(ts.URL)
+	client.Client.BaseURL, _ = url.Parse(ts.URL + "/")
 	return client, ts
 }
 
