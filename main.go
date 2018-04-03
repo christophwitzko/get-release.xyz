@@ -40,7 +40,7 @@ func doRedirect(w http.ResponseWriter, r *http.Request, url string, err error) {
 		http.NotFound(w, r)
 		return
 	}
-	w.Header().Set("Cache-Control", "max-age=300")
+	w.Header().Set("Cache-Control", "public, max-age=300")
 	http.Redirect(w, r, url, 302)
 }
 
