@@ -40,7 +40,7 @@ func doRedirect(w http.ResponseWriter, r *http.Request, url string, err error) {
 		http.NotFound(w, r)
 		return
 	}
-	w.Header().Set("Cache-Control", "public, max-age=7200")
+	// w.Header().Set("Cache-Control", "public, max-age=7200")
 	http.Redirect(w, r, url, 302)
 }
 
@@ -91,6 +91,7 @@ func usage(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		http.Error(w, "server error", http.StatusInternalServerError)
 		return
 	}
+	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	json.NewEncoder(w).Encode(rl.Core)
 }
