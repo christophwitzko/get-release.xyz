@@ -1,33 +1,33 @@
 hash: fd3dfa00ea6d46ea463d08dee70136a1a99719c4ffd799d452e729a3e16795c0
-updated: 2018-01-20T00:36:16.566381+01:00
+updated: 2019-03-04T12:36:25.198879+01:00
 imports:
 - name: github.com/golang/protobuf
-  version: 1e59b77b52bf8e4b449a57e6f79f21226d571845
+  version: b5d812f8a3706043e23a9cd5babf2e5423744d30
   subpackages:
   - proto
 - name: github.com/google/go-github
-  version: 922ceac0585d40f97d283d921f872fc50480e06e
+  version: 361aadb2cdade67c723a8c90e9a3325662159be3
   subpackages:
   - github
 - name: github.com/google/go-querystring
-  version: 53e6ce116135b80d037921a7fdd5138cf32d7a8a
+  version: 44c6ddd0a2342c386950e880b658017258da92fc
   subpackages:
   - query
 - name: github.com/julienschmidt/httprouter
-  version: e1b9828bc9e5904baec057a154c09ca40fe7fae0
+  version: 26a05976f9bf5c3aa992cc20e8588c359418ee58
 - name: github.com/Masterminds/semver
-  version: 15d8430ab86497c5c0da827b748823945e1cf1e1
+  version: c84ddcca87bf5a941b138dde832a7e20b0159ad8
 - name: golang.org/x/net
-  version: 5ccada7d0a7ba9aeb5d3aca8d3501b4c2a509fec
+  version: 16b79f2e4e95ea23b2bf9903c9809ff7b013ce85
   subpackages:
   - context
   - context/ctxhttp
 - name: golang.org/x/oauth2
-  version: b28fcf2b08a19742b43084fb40ab78ac6c3d8067
+  version: e64efc72b421e893cbf63f17ba2221e7d6d0b0f3
   subpackages:
   - internal
 - name: google.golang.org/appengine
-  version: 5bee14b453b4c71be47ec1781b0fa61c2ea182db
+  version: 54a98f90d1c46b7731eb8fb305d2a321c30ef610
   subpackages:
   - internal
   - internal/base

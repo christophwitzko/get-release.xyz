@@ -33,7 +33,7 @@ func TestAppsService_ListRepos(t *testing.T) {
 		t.Errorf("Apps.ListRepos returned error: %v", err)
 	}
 
-	want := []*Repository{{ID: Int(1)}}
+	want := []*Repository{{ID: Int64(1)}}
 	if !reflect.DeepEqual(repositories, want) {
 		t.Errorf("Apps.ListRepos returned %+v, want %+v", repositories, want)
 	}
@@ -59,7 +59,7 @@ func TestAppsService_ListUserRepos(t *testing.T) {
 		t.Errorf("Apps.ListUserRepos returned error: %v", err)
 	}
 
-	want := []*Repository{{ID: Int(1)}}
+	want := []*Repository{{ID: Int64(1)}}
 	if !reflect.DeepEqual(repositories, want) {
 		t.Errorf("Apps.ListUserRepos returned %+v, want %+v", repositories, want)
 	}
@@ -69,8 +69,9 @@ func TestAppsService_AddRepository(t *testing.T) {
 	client, mux, _, teardown := setup()
 	defer teardown()
 
-	mux.HandleFunc("/apps/installations/1/repositories/1", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/user/installations/1/repositories/1", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, "PUT")
+		testHeader(t, r, "Accept", mediaTypeIntegrationPreview)
 		fmt.Fprint(w, `{"id":1,"name":"n","description":"d","owner":{"login":"l"},"license":{"key":"mit"}}`)
 	})
 
@@ -79,7 +80,7 @@ func TestAppsService_AddRepository(t *testing.T) {
 		t.Errorf("Apps.AddRepository returned error: %v", err)
 	}
 
-	want := &Repository{ID: Int(1), Name: String("n"), Description: String("d"), Owner: &User{Login: String("l")}, License: &License{Key: String("mit")}}
+	want := &Repository{ID: Int64(1), Name: String("n"), Description: String("d"), Owner: &User{Login: String("l")}, License: &License{Key: String("mit")}}
 	if !reflect.DeepEqual(repo, want) {
 		t.Errorf("AddRepository returned %+v, want %+v", repo, want)
 	}
@@ -89,8 +90,9 @@ func TestAppsService_RemoveRepository(t *testing.T) {
 	client, mux, _, teardown := setup()
 	defer teardown()
 
-	mux.HandleFunc("/apps/installations/1/repositories/1", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/user/installations/1/repositories/1", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, "DELETE")
+		testHeader(t, r, "Accept", mediaTypeIntegrationPreview)
 		w.WriteHeader(http.StatusNoContent)
 	})
 

@@ -6,6 +6,7 @@
 package github
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -20,7 +21,6 @@ func TestGitService_GetBlob(t *testing.T) {
 
 	mux.HandleFunc("/repos/o/r/git/blobs/s", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, "GET")
-		testHeader(t, r, "Accept", mediaTypeGraphQLNodeIDPreview)
 
 		fmt.Fprint(w, `{
 			  "sha": "s",
@@ -51,6 +51,28 @@ func TestGitService_GetBlob_invalidOwner(t *testing.T) {
 	testURLParseError(t, err)
 }
 
+func TestGitService_GetBlobRaw(t *testing.T) {
+	client, mux, _, teardown := setup()
+	defer teardown()
+
+	mux.HandleFunc("/repos/o/r/git/blobs/s", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "GET")
+		testHeader(t, r, "Accept", "application/vnd.github.v3.raw")
+
+		fmt.Fprint(w, `raw contents here`)
+	})
+
+	blob, _, err := client.Git.GetBlobRaw(context.Background(), "o", "r", "s")
+	if err != nil {
+		t.Errorf("Git.GetBlobRaw returned error: %v", err)
+	}
+
+	want := []byte("raw contents here")
+	if !bytes.Equal(blob, want) {
+		t.Errorf("GetBlobRaw returned %q, want %q", blob, want)
+	}
+}
+
 func TestGitService_CreateBlob(t *testing.T) {
 	client, mux, _, teardown := setup()
 	defer teardown()
@@ -67,7 +89,6 @@ func TestGitService_CreateBlob(t *testing.T) {
 		json.NewDecoder(r.Body).Decode(v)
 
 		testMethod(t, r, "POST")
-		testHeader(t, r, "Accept", mediaTypeGraphQLNodeIDPreview)
 
 		want := input
 		if !reflect.DeepEqual(v, want) {

@@ -19,7 +19,6 @@ func TestRepositoriesService_ListInvitations(t *testing.T) {
 
 	mux.HandleFunc("/repos/o/r/invitations", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, "GET")
-		testHeader(t, r, "Accept", mediaTypeRepositoryInvitationsPreview)
 		testFormValues(t, r, values{"page": "2"})
 		fmt.Fprintf(w, `[{"id":1}, {"id":2}]`)
 	})
@@ -30,7 +29,7 @@ func TestRepositoriesService_ListInvitations(t *testing.T) {
 		t.Errorf("Repositories.ListInvitations returned error: %v", err)
 	}
 
-	want := []*RepositoryInvitation{{ID: Int(1)}, {ID: Int(2)}}
+	want := []*RepositoryInvitation{{ID: Int64(1)}, {ID: Int64(2)}}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("Repositories.ListInvitations = %+v, want %+v", got, want)
 	}
@@ -42,7 +41,6 @@ func TestRepositoriesService_DeleteInvitation(t *testing.T) {
 
 	mux.HandleFunc("/repos/o/r/invitations/2", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, "DELETE")
-		testHeader(t, r, "Accept", mediaTypeRepositoryInvitationsPreview)
 		w.WriteHeader(http.StatusNoContent)
 	})
 
@@ -58,7 +56,6 @@ func TestRepositoriesService_UpdateInvitation(t *testing.T) {
 
 	mux.HandleFunc("/repos/o/r/invitations/2", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, "PATCH")
-		testHeader(t, r, "Accept", mediaTypeRepositoryInvitationsPreview)
 		fmt.Fprintf(w, `{"id":1}`)
 	})
 
@@ -67,7 +64,7 @@ func TestRepositoriesService_UpdateInvitation(t *testing.T) {
 		t.Errorf("Repositories.UpdateInvitation returned error: %v", err)
 	}
 
-	want := &RepositoryInvitation{ID: Int(1)}
+	want := &RepositoryInvitation{ID: Int64(1)}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("Repositories.UpdateInvitation = %+v, want %+v", got, want)
 	}

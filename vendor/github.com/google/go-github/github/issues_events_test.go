@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -17,8 +18,10 @@ func TestIssuesService_ListIssueEvents(t *testing.T) {
 	client, mux, _, teardown := setup()
 	defer teardown()
 
+	wantAcceptHeaders := []string{mediaTypeLockReasonPreview, mediaTypeProjectCardDetailsPreview}
 	mux.HandleFunc("/repos/o/r/issues/1/events", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, "GET")
+		testHeader(t, r, "Accept", strings.Join(wantAcceptHeaders, ", "))
 		testFormValues(t, r, values{
 			"page":     "1",
 			"per_page": "2",
@@ -32,7 +35,7 @@ func TestIssuesService_ListIssueEvents(t *testing.T) {
 		t.Errorf("Issues.ListIssueEvents returned error: %v", err)
 	}
 
-	want := []*IssueEvent{{ID: Int(1)}}
+	want := []*IssueEvent{{ID: Int64(1)}}
 	if !reflect.DeepEqual(events, want) {
 		t.Errorf("Issues.ListIssueEvents returned %+v, want %+v", events, want)
 	}
@@ -57,7 +60,7 @@ func TestIssuesService_ListRepositoryEvents(t *testing.T) {
 		t.Errorf("Issues.ListRepositoryEvents returned error: %v", err)
 	}
 
-	want := []*IssueEvent{{ID: Int(1)}}
+	want := []*IssueEvent{{ID: Int64(1)}}
 	if !reflect.DeepEqual(events, want) {
 		t.Errorf("Issues.ListRepositoryEvents returned %+v, want %+v", events, want)
 	}
@@ -77,7 +80,7 @@ func TestIssuesService_GetEvent(t *testing.T) {
 		t.Errorf("Issues.GetEvent returned error: %v", err)
 	}
 
-	want := &IssueEvent{ID: Int(1)}
+	want := &IssueEvent{ID: Int64(1)}
 	if !reflect.DeepEqual(event, want) {
 		t.Errorf("Issues.GetEvent returned %+v, want %+v", event, want)
 	}
