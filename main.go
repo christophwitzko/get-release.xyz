@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/Masterminds/semver"
 	"github.com/christophwitzko/github-release-download/release"
 	"github.com/julienschmidt/httprouter"
 	"log"
@@ -47,12 +48,18 @@ func doRedirect(w http.ResponseWriter, r *http.Request, url string, err error) {
 func getLatestDownload(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 	defer cancel()
-	if len(ps) == 3 {
-		url, err := client.GetLatestDownloadUrl(ctx, "go-" + ps[0].Value, ps[0].Value, ps[1].Value, ps[2].Value)
+
+	if len(ps) == 4 {
+		if _, err := semver.NewConstraint(ps[3].Value); err != nil {
+			url, err := client.GetLatestDownloadUrl(ctx, ps[0].Value, ps[1].Value, ps[2].Value, ps[3].Value)
+			doRedirect(w, r, url, err)
+			return
+		}
+		url, err := client.GetMatchingDownloadUrl(ctx, "go-"+ps[0].Value, ps[0].Value, ps[1].Value, ps[2].Value, ps[3].Value)
 		doRedirect(w, r, url, err)
 		return
 	}
-	url, err := client.GetLatestDownloadUrl(ctx, ps[0].Value, ps[1].Value, ps[2].Value, ps[3].Value)
+	url, err := client.GetLatestDownloadUrl(ctx, "go-"+ps[0].Value, ps[0].Value, ps[1].Value, ps[2].Value)
 	doRedirect(w, r, url, err)
 }
 
