@@ -11,12 +11,12 @@ import (
 	"testing"
 )
 
-func createReleaseAsset(name, url string) github.ReleaseAsset {
-	return github.ReleaseAsset{Name: &name, BrowserDownloadURL: &url}
+func createReleaseAsset(name, url string) *github.ReleaseAsset {
+	return &github.ReleaseAsset{Name: &name, BrowserDownloadURL: &url}
 }
 
 func createRelease(version string, draft bool) *github.RepositoryRelease {
-	return &github.RepositoryRelease{TagName: &version, Draft: &draft, Assets: []github.ReleaseAsset{
+	return &github.RepositoryRelease{TagName: &version, Draft: &draft, Assets: []*github.ReleaseAsset{
 		createReleaseAsset("test_darwin_amd64", "url/a"),
 		createReleaseAsset("test_windows_386.exe", "url/b"),
 		createReleaseAsset("testfile", "url/c"),
