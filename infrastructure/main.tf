@@ -6,11 +6,11 @@ terraform {
 }
 
 variable "image" {
-  type = "string"
+  type = string
 }
 
 variable "domain" {
-  type = "string"
+  type = string
 }
 
 variable "ssh_user" {
@@ -22,22 +22,22 @@ variable "private_key_path" {
 }
 
 variable "github_token" {
-  type = "string"
+  type = string
 }
 
 variable "deploy_token" {
-  type = "string"
+  type = string
 }
 
 resource "google_compute_instance" "default" {
-  name         = "${element(split(".", "${var.domain}"), 0)}"
+  name         = element(split(".", var.domain), 0)
   machine_type = "f1-micro"
   zone         = "us-west1-a"
   tags         = ["http"]
 
   boot_disk {
     initialize_params {
-      image = "${var.image}"
+      image = var.image
     }
   }
 
@@ -52,8 +52,9 @@ resource "google_compute_instance" "default" {
   provisioner "remote-exec" {
     connection {
       type        = "ssh"
-      user        = "${var.ssh_user}"
-      private_key = "${file("${var.private_key_path}")}"
+      host        = self.network_interface.0.access_config.0.nat_ip
+      user        = var.ssh_user
+      private_key = file(var.private_key_path)
       agent       = false
     }
 
@@ -77,29 +78,9 @@ resource "google_compute_firewall" "default" {
   target_tags   = ["http"]
 }
 
-resource "google_dns_managed_zone" "default" {
-  name     = "${replace("${var.domain}", ".", "-")}"
-  dns_name = "${var.domain}."
-}
-
-resource "google_dns_record_set" "hub" {
-  name         = "hub-webhook.${google_dns_managed_zone.default.dns_name}"
-  managed_zone = "${google_dns_managed_zone.default.name}"
-  type         = "A"
-  ttl          = 300
-  rrdatas      = ["${google_compute_instance.default.network_interface.0.access_config.0.assigned_nat_ip}"]
-}
-
-resource "google_dns_record_set" "default" {
-  name         = "${google_dns_managed_zone.default.dns_name}"
-  managed_zone = "${google_dns_managed_zone.default.name}"
-  type         = "A"
-  ttl          = 300
-  rrdatas      = ["${google_compute_instance.default.network_interface.0.access_config.0.assigned_nat_ip}"]
-}
 
 output "ip" {
-  value = "${google_compute_instance.default.network_interface.0.access_config.0.assigned_nat_ip}"
+  value = google_compute_instance.default.network_interface.0.access_config.0.nat_ip
 }
 
 output "webhookurl" {
