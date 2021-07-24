@@ -3,12 +3,13 @@ package release
 import (
 	"context"
 	"encoding/json"
-	"github.com/Masterminds/semver"
-	"github.com/google/go-github/v30/github"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
+
+	"github.com/Masterminds/semver"
+	"github.com/google/go-github/v30/github"
 )
 
 func createReleaseAsset(name, url string) *github.ReleaseAsset {
@@ -50,15 +51,15 @@ func githubHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.Method == "GET" && r.URL.Path == "/repos/owner/repo/releases/latest" {
-		json.NewEncoder(w).Encode(GITHUB_LATEST_RELEASE)
+		_ = json.NewEncoder(w).Encode(GITHUB_LATEST_RELEASE)
 		return
 	}
 	if r.Method == "GET" && r.URL.Path == "/repos/owner/repo/releases" {
-		json.NewEncoder(w).Encode(GITHUB_RELEASES)
+		_ = json.NewEncoder(w).Encode(GITHUB_RELEASES)
 		return
 	}
 	if r.Method == "GET" && r.URL.Path == "/repos/golang/go/git/refs/tags/go" {
-		json.NewEncoder(w).Encode(GITHUB_TAGS)
+		_ = json.NewEncoder(w).Encode(GITHUB_TAGS)
 		return
 	}
 	http.Error(w, "invalid route", http.StatusNotImplemented)
@@ -112,8 +113,8 @@ func TestGetLatestDownloadUrl(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 0)
 	defer cancel()
-	url, err = client.GetLatestDownloadUrl(ctx, "owner", "repo", "darwin", "amd64")
-	if err == nil || err.Error() != "context deadline exceeded" {
+	_, err = client.GetLatestDownloadUrl(ctx, "owner", "repo", "darwin", "amd64")
+	if err == nil || err != context.DeadlineExceeded {
 		t.Fail()
 	}
 }

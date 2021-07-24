@@ -2,12 +2,13 @@ package release
 
 import (
 	"context"
-	"github.com/Masterminds/semver"
-	"github.com/google/go-github/v30/github"
-	"golang.org/x/oauth2"
 	"regexp"
 	"sort"
 	"strings"
+
+	"github.com/Masterminds/semver"
+	"github.com/google/go-github/v30/github"
+	"golang.org/x/oauth2"
 )
 
 var osarchRegexp = regexp.MustCompile("(?i)(android|darwin|dragonfly|freebsd|linux|nacl|netbsd|openbsd|plan9|solaris|windows)(_|-)(i?386|amd64p32|amd64|arm64|arm|mips64le|mips64|mipsle|mips|ppc64le|ppc64|s390x|x86_64)")
@@ -171,7 +172,10 @@ func (c *GithubClient) GetAllVersions(ctx context.Context, prefix, owner, repo s
 	case c.lock <- struct{}{}:
 	}
 	allRefs := make([]string, 0)
-	opts := &github.ReferenceListOptions{"tags/" + prefix, github.ListOptions{PerPage: 100}}
+	opts := &github.ReferenceListOptions{
+		Type:        "tags/" + prefix,
+		ListOptions: github.ListOptions{PerPage: 100},
+	}
 	for {
 		refs, resp, err := c.Client.Git.ListRefs(ctx, owner, repo, opts)
 		if err != nil {

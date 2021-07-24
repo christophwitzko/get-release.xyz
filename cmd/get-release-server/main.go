@@ -4,14 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/Masterminds/semver"
-	"github.com/christophwitzko/github-release-download/release"
-	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
+
+	"github.com/Masterminds/semver"
+	"github.com/christophwitzko/github-release-download/internal/release"
+	"github.com/julienschmidt/httprouter"
 )
 
 var bindAddress string = ":5000"
@@ -81,7 +83,10 @@ func getVersions(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		json.NewEncoder(w).Encode(versions)
+		err = json.NewEncoder(w).Encode(versions)
+		if err != nil {
+			log.Println(err)
+		}
 		return
 	}
 	http.NotFound(w, r)
@@ -100,11 +105,14 @@ func usage(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	json.NewEncoder(w).Encode(rl.Core)
+	err = json.NewEncoder(w).Encode(rl.Core)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	fmt.Fprintln(w, "https://get-release.xyz/:owner/:repo/:os/:arch{/:constraint}")
+	_, _ = fmt.Fprintln(w, "https://get-release.xyz/:owner/:repo/:os/:arch{/:constraint}")
 }
 
 func main() {
@@ -121,13 +129,15 @@ func main() {
 	}
 	go func() {
 		log.Printf("starting server on port %s...", bindAddress)
-		if err := server.ListenAndServe(); err != nil {
+		if err := server.ListenAndServe(); err != http.ErrServerClosed {
 			log.Fatal(err)
 		}
 	}()
-	defer server.Shutdown(nil)
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, os.Kill)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	<-c
+	if err := server.Shutdown(context.TODO()); err != nil {
+		log.Println(err)
+	}
 	log.Println("server stopped")
 }
