@@ -22,6 +22,8 @@ var client *release.GithubClient
 func init() {
 	if ba := os.Getenv("BIND_ADDRESS"); ba != "" {
 		bindAddress = ba
+	} else if port := os.Getenv("PORT"); port != "" {
+		bindAddress = ":" + port
 	}
 	client = release.NewClient(os.Getenv("GITHUB_TOKEN"))
 }
