@@ -12,5 +12,7 @@ FROM scratch
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /app/get-release-server .
 
-EXPOSE 5000
+ENV PORT=8080
+EXPOSE 8080
+
 CMD ["/get-release-server"]

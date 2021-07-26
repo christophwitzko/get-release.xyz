@@ -80,9 +80,10 @@ type GithubClient struct {
 }
 
 func NewClient(token string) *GithubClient {
-	return &GithubClient{github.NewClient(oauth2.NewClient(context.TODO(), oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: token},
-	))), make(chan struct{}, 1)}
+	return &GithubClient{
+		Client: github.NewClient(oauth2.NewClient(context.TODO(), oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token}))),
+		lock:   make(chan struct{}, 1),
+	}
 }
 
 func parseRelease(release *github.RepositoryRelease) *Release {
@@ -114,8 +115,10 @@ func (c *GithubClient) GetAllReleases(ctx context.Context, owner, repo string) (
 		return nil, ctx.Err()
 	case c.lock <- struct{}{}:
 	}
+	defer func() {
+		<-c.lock
+	}()
 	releases, _, err := c.Client.Repositories.ListReleases(ctx, owner, repo, &github.ListOptions{PerPage: 100})
-	<-c.lock
 	if err != nil {
 		return nil, err
 	}
@@ -171,6 +174,9 @@ func (c *GithubClient) GetAllVersions(ctx context.Context, prefix, owner, repo s
 		return nil, ctx.Err()
 	case c.lock <- struct{}{}:
 	}
+	defer func() {
+		<-c.lock
+	}()
 	allRefs := make([]string, 0)
 	opts := &github.ReferenceListOptions{
 		Type:        "tags/" + prefix,
@@ -189,7 +195,6 @@ func (c *GithubClient) GetAllVersions(ctx context.Context, prefix, owner, repo s
 		}
 		opts.Page = resp.NextPage
 	}
-	<-c.lock
 	return allRefs, nil
 }
 
