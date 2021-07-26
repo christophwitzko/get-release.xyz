@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/semver"
-	"github.com/christophwitzko/github-release-download/internal/release"
+	"github.com/christophwitzko/get-release.xyz/internal/release"
 	"github.com/julienschmidt/httprouter"
 )
 

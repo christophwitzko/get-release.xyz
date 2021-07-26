@@ -1,4 +1,4 @@
-module github.com/christophwitzko/github-release-download
+module github.com/christophwitzko/get-release.xyz
 
 go 1.16
 

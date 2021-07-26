@@ -1,7 +1,7 @@
 # GitHub Release Download Server
 > finds the latest release asset
 
-[![CI](https://github.com/christophwitzko/github-release-download/workflows/CI/badge.svg?branch=master)](https://github.com/christophwitzko/github-release-download/actions?query=workflow%3ACI+branch%3Amaster)
+[![CI](https://github.com/christophwitzko/get-release.xyz/workflows/CI/badge.svg?branch=master)](https://github.com/christophwitzko/get-release.xyz/actions?query=workflow%3ACI+branch%3Amaster)
 
 ## Example
 
