@@ -1,7 +1,7 @@
 # GitHub Release Download Server
 > finds the latest release asset
 
-[![Build Status](https://travis-ci.org/christophwitzko/github-release-download.svg?branch=master)](https://travis-ci.org/christophwitzko/github-release-download)
+[![CI](https://github.com/christophwitzko/github-release-download/workflows/CI/badge.svg?branch=master)](https://github.com/christophwitzko/github-release-download/actions?query=workflow%3ACI+branch%3Amaster)
 
 ## Example
 
@@ -13,4 +13,4 @@ curl -SL https://get-release.xyz/semantic-release/linux/amd64 -o semantic-releas
 
 The [MIT License (MIT)](http://opensource.org/licenses/MIT)
 
-Copyright © 2018 [Christoph Witzko](https://twitter.com/christophwitzko)
+Copyright © 2021 [Christoph Witzko](https://twitter.com/christophwitzko)
