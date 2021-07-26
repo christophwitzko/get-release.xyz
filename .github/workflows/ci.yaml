@@ -40,6 +40,8 @@ jobs:
         with:
           project_id: get-release-xyz
           service_account_key: ${{ secrets.GCLOUD_AUTH }}
-#        if: steps.semrel.outputs.version != ''
-      - run: gcloud auth configure-docker eu.gcr.io -q
-#        if: steps.semrel.outputs.version != ''
+        if: steps.semrel.outputs.version != ''
+      - run: gcloud auth configure-docker gcr.io -q
+        if: steps.semrel.outputs.version != ''
+      - run: ./scripts/docker-build-and-push.sh ${{ steps.semrel.outputs.version }}
+        if: steps.semrel.outputs.version != ''
