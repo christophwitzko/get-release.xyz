@@ -45,3 +45,9 @@ jobs:
         if: steps.semrel.outputs.version != ''
       - run: ./scripts/docker-build-and-push.sh ${{ steps.semrel.outputs.version }}
         if: steps.semrel.outputs.version != ''
+      - uses: google-github-actions/deploy-cloudrun@main
+        with:
+          service: get-release-server
+          image: gcr.io/get-release-xyz/get-release-server:${{ steps.semrel.outputs.version }}
+          tag: ${{ steps.semrel.outputs.version }}
+        if: steps.semrel.outputs.version != ''
