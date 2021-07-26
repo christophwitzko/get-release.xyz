@@ -1,0 +1,45 @@
+name: CI
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: golangci/golangci-lint-action@v2
+
+  build:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: 1.16
+      - run: go build ./cmd/get-release-server/
+        env:
+          CGO_ENABLED: 0
+      - run: go test -v ./...
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: go-semantic-release/action@v1
+        id: semrel
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: google-github-actions/setup-gcloud@master
+        with:
+          project_id: get-release-xyz
+          service_account_key: ${{ secrets.GCLOUD_AUTH }}
+#        if: steps.semrel.outputs.version != ''
+      - run: gcloud auth configure-docker eu.gcr.io -q
+#        if: steps.semrel.outputs.version != ''
