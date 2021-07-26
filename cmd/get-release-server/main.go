@@ -16,7 +16,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-var bindAddress string = ":5000"
+var bindAddress = ":5000"
 var client *release.GithubClient
 
 func init() {
