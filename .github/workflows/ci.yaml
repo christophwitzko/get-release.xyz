@@ -49,5 +49,4 @@ jobs:
         with:
           service: get-release-server
           image: gcr.io/get-release-xyz/get-release-server:${{ steps.semrel.outputs.version }}
-          tag: ${{ steps.semrel.outputs.version }}
         if: steps.semrel.outputs.version != ''
